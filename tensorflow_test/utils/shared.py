@@ -7,7 +7,7 @@ WL_RATIO = 4/3
 
 CSV_COLUMN_NAMES = ['SepalLength', 'SepalWidth',
                     'PetalLength', 'PetalWidth', 'Species']
-# ['setosa', 'versicolor', 'virginica']
+SPECIES = ['Setosa', 'Versicolor', 'Virginica']
 TRAIN_URL = "http://download.tensorflow.org/data/iris_training.csv"
 TEST_URL = "http://download.tensorflow.org/data/iris_test.csv"
 LABEL = 'Species'

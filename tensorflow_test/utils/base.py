@@ -43,34 +43,3 @@ class Base:
         for key in _train_feature.keys():
             feature_cols.append(tf.feature_column.numeric_column(key=key))
         return feature_cols
-
-    def train_input_fn(self, _features, _labels, _batch_size):
-        """An input function for training"""
-        # Convert the inputs to a Dataset.
-        dataset = tf.data.Dataset.from_tensor_slices(
-            (dict(_features), _labels))
-        # print(dataset)
-        # Shuffle, repeat, and batch the examples.
-        dataset = dataset.shuffle(1000).repeat().batch(_batch_size)
-        # print(dataset)
-        # Return the dataset.
-        return dataset
-
-    def eval_input_fn(self, _features, _labels, _batch_size):
-        """An input function for evaluation or prediction"""
-        features = dict(_features)
-        if _labels is None:
-            # No labels, use only features.
-            inputs = features
-        else:
-            inputs = (features, _labels)
-
-            # Convert the inputs to a Dataset.
-            dataset = tf.data.Dataset.from_tensor_slices(inputs)
-
-            # Batch the examples
-            assert _batch_size is not None, "batch_size must not be None"
-            dataset = dataset.batch(_batch_size)
-
-            # Return the dataset.
-        return dataset
