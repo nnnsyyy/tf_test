@@ -19,3 +19,6 @@ DeviceModels = range(CLASS_NUM)
 RESULT_PATH = './results'
 MODEL_FILE = './results/vgg_model.json'
 WEIGHT_FILE = './results/vgg_weight.h5'
+
+LEARNING_RATE = 0.01
+BATCH_SIZE = 10

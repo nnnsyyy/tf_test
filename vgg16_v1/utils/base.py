@@ -3,27 +3,12 @@
 import tensorflow as tf
 import pandas as pd
 # import numpy as np
-from PIL import Image
 from . import shared
 
 
 class Base:
     def __init__(self):
         self.size = (shared.IMAGE_SIZE, shared.IMAGE_SIZE)
-
-    # resize images into (224, 224) with white bg
-    # _img: path of image
-    def img_format(self, _img):
-        # scaling img into (224, 224)
-        img = Image.open(_img)
-        img.thumbnail(self.size, Image.ANTIALIAS)
-        # add white bg
-        img_bg = Image.new('RGB', self.size, (255, 255, 255))
-        img_bg.paste(
-            img, (int((self.size[0] - img.size[0]) / 2),
-                  int((self.size[1] - img.size[1]) / 2))
-        )
-        return img_bg
 
     def load_data_csv(self, _label, _is_url, _train, _test):
         # Create a local copy of the training set.
