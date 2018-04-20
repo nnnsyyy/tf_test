@@ -6,7 +6,10 @@ import numpy as np
 import utils.shared as shared
 from PIL import Image
 from tf.python.keras.preprocessing import image
+from tensorflow.python.keras.preprocessing.image import img_to_array, load_img
 from tf.python.keras.applications.vgg16 import preprocess_input
+import glob
+import os.path
 
 
 class img_format:
@@ -18,10 +21,12 @@ class img_format:
     def img_generator(self, _train_dir, _val_dir):
         train_datagen = image.ImageDataGenerator(
                             rescale=1./255,
+                            rotation_range=90,
                             fill_mode='nearest',
                             shear_range=0.2,
                             zoom_range=0.2,
-                            horizontal_flip=True)
+                            width_range=0.2,
+                            height_range=0.2)
         test_datagen = image.ImageDataGenerator(
                             rescale=1. / 255)
         train_generator = train_datagen.flow_from_directory(
@@ -36,6 +41,31 @@ class img_format:
                                 class_mode='categorical')
         return train_generator, test_generator
 
+    def img_aug(self, _generator, _batch, _path):
+        dir_list = glob.glob(_path+'*')
+        for dir_name in dir_list:
+            brand_list = glob.glob(dir_name+'/*')
+            for brand_name in brand_list:
+                device_list = glob.glob(brand_name+'/*')
+                for device_name in device_list:
+                    img_list = glob.glob(device_name+'/*')
+                    for img_name in img_list:
+                        self.img_adjust(img_name)
+                        img = load_img(img_name)
+                        img = img_to_array(img)
+                        img = img.reshape((1,)+img.shape)
+                        gen_data = _generator.flow(x=img,
+                                                   batch_sizes=1,
+                                                   shuffle=True,
+                                                   save_to_dir=device_name,
+                                                   save_format='jpeg')
+                        count = 0
+                        for batch in gen_data:
+                            count += 1
+                            if(count > _batch):
+                                print('save'+os.path.basename(img_name))
+                                break
+
     # resize images into (224, 224) with white bg
     # _img: path of image
     def img_adjust(self, _img):
@@ -48,7 +78,8 @@ class img_format:
             img, (int((self.size[0] - img.size[0]) / 2),
                   int((self.size[1] - img.size[1]) / 2))
         )
-        return img_bg
+        img_bg.save(_img)
+        # return img_bg
 
     def img_array(self, _img):
         array = image.img_to_array(_img)
