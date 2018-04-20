@@ -11,17 +11,19 @@ from tf.python.keras.applications.vgg16 import preprocess_input
 
 class img_format:
     def __init__(self):
-        self.size = (shared.SIZE, shared.SIZE)
+        self.size = (shared.IMAGE_SIZE, shared.IMAGE_SIZE)
 
     # https://keras.io/preprocessing/image/
     # shear/zoom etc. for augmentation
     def img_generator(self, _train_dir, _val_dir):
         train_datagen = image.ImageDataGenerator(
                             rescale=1./255,
+                            fill_mode='nearest',
                             shear_range=0.2,
                             zoom_range=0.2,
                             horizontal_flip=True)
-        test_datagen = image.ImageDataGenerator(rescale=1. / 255)
+        test_datagen = image.ImageDataGenerator(
+                            rescale=1. / 255)
         train_generator = train_datagen.flow_from_directory(
                             _train_dir,
                             target_size=self.size,
@@ -36,7 +38,7 @@ class img_format:
 
     # resize images into (224, 224) with white bg
     # _img: path of image
-    def img_format(self, _img):
+    def img_adjust(self, _img):
         # scaling img into (224, 224)
         img = Image.open(_img)
         img.thumbnail(self.size, Image.ANTIALIAS)

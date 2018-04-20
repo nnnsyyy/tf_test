@@ -7,9 +7,9 @@
 
 import tensorflow as tf
 import utils.shared as shared
-import model.img_format.img_format as img_format
+import utils.base as base
 import tensorflow.python.keras as K
-from K.applications.vgg16 import VGG16, preprocess_input, decode_predictions
+from K.applications.vgg16 import VGG16, decode_predictions
 # from K.preprocessing import image
 from K.layers import Input, Flatten, Dense
 from K.models import Model, model_from_json
@@ -22,43 +22,52 @@ class VGGModel:
         self.has_model = True if os.path.isfile(shared.MODEL_FILE) else False
         self.model = None
 
-    def model_init(self, _mode=None):
+    def model_init(self, _mode=None, _classes=shared.CLASS_NUM):
         if(_mode == 'load' and self.has_model):
-            self.model_load()
+            self.model = self.model_load()
         else:
             print('Init model.')
-            self.model_get()
+            self.model = self.model_get(_classes)
+            self.has_model = True
 
-    def model_get(self):
+    def model_get(self, _classes):
         vgg16_conv = VGG16(weights='imagenet',
-                           input_shape=self.shape,
-                           include_top=False)
-        # freeze the conv layers
-        for layer in vgg16_conv.layers:
-            layer.trainable = False
-        vgginput = Input(shape=self.shape, name='image_input')
-        output_vgg16_conv = vgg16_conv(vgginput)
+                           include_top=True)
+        # freeze the conv layers + fc-4096^2
+        with tf.variable_scope("VGG16_model"):
+            vgg16_conv = Model(inputs=vgg16_conv.input,
+                               outputs=vgg16_conv.get_layer('fc2').output)
+            for layer in vgg16_conv.layers:
+                layer.trainable = False
 
-        with tf.variable_scope("New_FCs"):
-            # Add the fully-connected layers
-            x = Flatten(name='flatten')(output_vgg16_conv)
-            x = Dense(4096, activation='relu', name='fc1')(x)
-            x = Dense(4096, activation='relu', name='fc2')(x)
-            x = Dense(shared.CLASS_NUM,
+        with tf.variable_scope("Input"):
+            vgginput = Input(shape=self.shape, name='image_input')
+
+        with tf.variable_scope("Model_output"):
+            output_vgg16 = vgg16_conv(vgginput)
+
+        with tf.variable_scope("New_classes"):
+            # Change the ourput layers
+            x = Flatten(name='flatten')(output_vgg16)
+            x = Dense(_classes,
                       activation='softmax',
                       name='predictions')(x)
 
         # Create your own model
         # Weights and layers from VGG part will be hidden
-        updatable_variables = tf.get_collection(
-                                tf.GraphKeys.GLOBAL_VARIABLES,
-                                scope='New_FCs')
+        # updatable_variables = tf.get_collection(
+        #                         tf.GraphKeys.GLOBAL_VARIABLES,
+        #                         scope='New_classes')
         my_model = Model(inputs=vgginput, outputs=x)
-        my_model = self.model_train(my_model, x, updatable_variables)
-        my_model.summary()
+        # my_model = self.model_train(my_model, x, updatable_variables)
+        # my_model.summary()
         self.model_save(my_model)
         return my_model
 
+    def model_check(self):
+        self.model.summary()
+        
+    # model is saved within result pathdr
     def model_save(self, _model):
         if not os.path.isdir(shared.RESULT_PATH):
             os.makedirs(shared.RESULT_PATH)
