@@ -1,10 +1,10 @@
 """ Macro definitions """
 
 
-IMAGE_SIZE = 256
+SIZE = 224
 
 LABEL = 'DeviceModels'
-CLASS_NUM = 10
+CLASS_NUM = 14
 DeviceModels = range(CLASS_NUM)
 
 # CSV_COLUMN_NAMES = ['SepalLength', 'SepalWidth',

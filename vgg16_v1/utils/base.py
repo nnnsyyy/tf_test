@@ -5,6 +5,7 @@
 # import numpy as np
 from . import shared
 from . import img_format
+# import vggmodel.vggmodel as VGGModel
 # import numpy as np
 
 

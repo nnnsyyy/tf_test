@@ -8,22 +8,29 @@
 import tensorflow as tf
 import utils.shared as shared
 import utils.base as base
-import tensorflow.python.keras as K
-from K.applications.vgg16 import VGG16, decode_predictions
+from tensorflow.python.keras.applications.vgg16 import VGG16, decode_predictions
 # from K.preprocessing import image
-from K.layers import Input, Flatten, Dense
-from K.models import Model, model_from_json
+from tensorflow.python.keras.layers import Input, Flatten, Dense
+from tensorflow.python.keras.models import Model, model_from_json
 import os
 
 
 class VGGModel:
     def __init__(self):
         self.shape = (shared.SIZE, shared.SIZE, 3)
-        self.has_model = True if os.path.isfile(shared.MODEL_FILE) else False
+        # self.has_model = True if os.path.isfile(shared.MODEL_FILE) else False
+        print(os.path.isfile(shared.MODEL_FILE))
+        if(os.path.isfile(shared.MODEL_FILE)):
+            print('There is a model.')
+            self.has_model = True
+        else:
+            self.has_model = False
         self.model = None
 
-    def model_init(self, _mode=None, _classes=shared.CLASS_NUM):
-        if(_mode == 'load' and self.has_model):
+    # def model_init(self, _mode=None, _classes=shared.CLASS_NUM):
+    def model_init(self, _classes=shared.CLASS_NUM):
+        if(self.has_model):
+            print('Load model.')
             self.model = self.model_load()
         else:
             print('Init model.')
@@ -66,7 +73,7 @@ class VGGModel:
 
     def model_check(self):
         self.model.summary()
-        
+
     # model is saved within result pathdr
     def model_save(self, _model):
         if not os.path.isdir(shared.RESULT_PATH):
@@ -83,12 +90,21 @@ class VGGModel:
         json_file.close()
         loaded_model = model_from_json(loaded_model_json)
         # load weights into new model
-        loaded_model.load_weights(os.path.join(shared.WEIGHT_PATH))
+        loaded_model.load_weights(os.path.join(shared.WEIGHT_FILE))
         print("Loaded model from disk")
         loaded_model.summary()
         # return loaded_model
         self.model = loaded_model
 
+    # def model_fit_gen(self):
+    #     # fine-tune the model
+    #     self.model.fit_generator(
+    #                 train_generator,
+    #                 steps_per_epoch=nb_train_samples // batch_size,
+    #                 epochs=epochs,
+    #                 validation_data=validation_generator,
+    #                 validation_steps=nb_validation_samples // batch_size)
+    #
     # def model_train(self, _train_feature, _train_label):
     def mode_train(self, _model, _x, updatable_variables):
         # Train model
