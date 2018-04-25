@@ -1,7 +1,9 @@
 # Weight file
+results/
 *.h5
 
 # images
+images/
 *.jpeg
 *.jpg
 

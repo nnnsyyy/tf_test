@@ -16,26 +16,30 @@ import os
 
 
 class VGGModel:
-    def __init__(self):
+    """
+    Params:
+        _classes[integer] optional used to change the class number #TODO
+        _init[boolean] optional used to forcely initiate model
+    """
+    def __init__(self, _classes=shared.CLASS_NUM, _init=False):
         self.shape = (shared.SIZE, shared.SIZE, 3)
-        # self.has_model = True if os.path.isfile(shared.MODEL_FILE) else False
         print(os.path.isfile(shared.MODEL_FILE))
         if(os.path.isfile(shared.MODEL_FILE)):
             print('There is a model.')
             self.has_model = True
         else:
             self.has_model = False
-        self.model = None
+        self.model = self.model_init(_classes, _init)
 
     # def model_init(self, _mode=None, _classes=shared.CLASS_NUM):
-    def model_init(self, _classes=shared.CLASS_NUM):
-        if(self.has_model):
+    def model_init(self, _classes, _init):
+        if(self.has_model and not _init):
             print('Load model.')
-            self.model = self.model_load()
+            return self.model_load()
         else:
             print('Init model.')
-            self.model = self.model_get(_classes)
             self.has_model = True
+            return self.model_get(_classes)
 
     def model_get(self, _classes):
         vgg16_conv = VGG16(weights='imagenet',
@@ -93,8 +97,7 @@ class VGGModel:
         loaded_model.load_weights(os.path.join(shared.WEIGHT_FILE))
         print("Loaded model from disk")
         loaded_model.summary()
-        # return loaded_model
-        self.model = loaded_model
+        return loaded_model
 
     # def model_fit_gen(self):
     #     # fine-tune the model

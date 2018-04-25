@@ -2,7 +2,7 @@
 
 
 SIZE = 224
-
+""" better to be updated by reading config files """
 LABEL = 'DeviceModels'
 CLASS_NUM = 14
 DeviceModels = range(CLASS_NUM)

@@ -18,7 +18,7 @@ class img_format:
 
     # https://keras.io/preprocessing/image/
     # shear/zoom etc. for augmentation
-    def img_generator(self, _dir, _mode):
+    def img_generator(self, _mode=None):
         if(_mode == 'train'):
             datagen = image.ImageDataGenerator(
                             rescale=1./255,
@@ -30,11 +30,17 @@ class img_format:
                             height_range=0.2)
         else:
             datagen = image.ImageDataGenerator(rescale=1. / 255)
-
         return datagen
 
+    def img_aug_folderflow(self, _generator, _batch, _path):
+        img_generator = _generator.flow_from_directory(
+                            _path,
+                            target_size=self.size,
+                            batch_size=_batch)
+        return img_generator.class_indices, img_generator
+
     # Data augmentation of all models within brand's path
-    def img_aug_brand(self, _generator, _batch, _path):
+    def img_aug_device(self, _generator, _batch, _path):
         for device_name in _path:
             img_list = glob.glob(device_name+'/*')
             for img_name in img_list:
@@ -47,20 +53,20 @@ class img_format:
                                            shuffle=True,
                                            save_to_dir=device_name,
                                            save_format='jpeg')
-                count = 0
-                for batch in gen_data:
-                    count += 1
-                    if(count > _batch):
-                        print('save'+os.path.basename(img_name))
-                        break
+                self.img_gen_save(gen_data, _batch)
+                print('Augment '+os.path.basename(img_name))
 
-    def img_aug_all(self, _generator, _batch, _path):
-        dir_list = glob.glob(_path+'*')
+    def img_gen_save(self, _gen_data, _batch):
+        count = 0
+        for batch in _gen_data:
+            count += 1
+            if(count > _batch):
+                break
+
+    def img_aug_flow(self, _generator, _batch, _path):
+        dir_list = glob.glob(_path+'/*')
         for dir_name in dir_list:
-            brand_list = glob.glob(dir_name+'/*')
-            for brand_name in brand_list:
-                device_list = glob.glob(brand_name+'/*')
-                self.img_aug_brand(_generator, _batch, device_list)
+            self.img_aug_device(_generator, _batch, dir_name)
 
     # resize images into (224, 224) with white bg
     # _img: path of image
